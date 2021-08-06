@@ -1,22 +1,6 @@
 from sklearn.base import BaseEstimator, TransformerMixin
 from typing import List
 import numpy as np
-import pandas as pd
-
-
-class SelectColumns(BaseEstimator, TransformerMixin):
-    def __init__(self, cols: List) -> None:
-        if not isinstance(cols, list):
-            self.cols = [cols]
-        else:
-            self.cols = cols
-
-    def fit(self, X: pd.DataFrame, y: pd.Series):
-        return self
-
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        X = X.copy()
-        return X[self.cols]
 
 
 class FctLumpTransformer(BaseEstimator, TransformerMixin):
@@ -45,7 +29,7 @@ class FctLumpTransformer(BaseEstimator, TransformerMixin):
         n = np.sum(counts)
         descending_idx = np.flip(np.argsort(counts))
         cumulative_prop_covered = np.cumsum(counts[descending_idx]) / n
-        index_covered = np.argmax(cumulative_prop_covered > pct)
+        index_covered = int(np.argmax(cumulative_prop_covered > pct))
         ctg_to_keep = categories[descending_idx][:index_covered]
         mapper = {ctg: ctg if ctg in ctg_to_keep else other_name for ctg in categories}
         return np.array([mapper[val] for val in x])
@@ -53,3 +37,53 @@ class FctLumpTransformer(BaseEstimator, TransformerMixin):
     def transform(self, X):
         return np.apply_over_axes(self._fct_lump, 0, X)
 
+
+class ColumnSelector(BaseEstimator, TransformerMixin):
+    """Select columns
+    """
+
+    def __init__(self, selected_columns):
+        """Select Column
+
+        Args:
+            selected_columns (list): List of column names to include
+        """
+        self.selected_columns = selected_columns
+
+    def fit(self, X):
+        return self
+
+    def transform(self, X):
+        return X[self.selected_columns]
+
+
+class ColumnDropper(BaseEstimator, TransformerMixin):
+    def __init__(self, to_drop):
+        """Drop Columns
+
+        Args:
+            to_drop (list): List of columns to drop
+        """
+        self.to_drop = to_drop
+
+    def fit(self, X):
+        return self
+
+    def transform(self, X):
+        return X[[c for c in X.columns if c not in self.to_drop]]
+
+
+class DTypeTransformer(BaseEstimator, TransformerMixin):
+    def __init__(self, dtype_to_set):
+        """Change the dtype of input
+
+        Args:
+            dtype_to_set (type): Type to which values will be transformed. Must work with np.astype 
+        """
+        self.dtype_to_set = dtype_to_set
+
+    def fit(self, X):
+        return self
+
+    def transform(self, X):
+        return X.astype(self.dtype_to_set)
