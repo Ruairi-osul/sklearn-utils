@@ -7,9 +7,6 @@ from setuptools import setup, find_packages
 with open("README.rst") as readme_file:
     readme = readme_file.read()
 
-with open("HISTORY.rst") as history_file:
-    history = history_file.read()
-
 requirements = []
 
 test_requirements = [
@@ -33,7 +30,6 @@ setup(
     description="Utility functions for working with scikit-learn",
     install_requires=requirements,
     license="GNU General Public License v3",
-    long_description=readme + "\n\n" + history,
     include_package_data=True,
     keywords="sklearn_utils",
     name="sklearn_utils",
